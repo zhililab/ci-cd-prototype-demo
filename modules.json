@@ -1,0 +1,19 @@
+{
+  "modules": [
+    {
+      "name": "lib-common",
+      "path": "libs/common",
+      "deps": []
+    },
+    {
+      "name": "svc-a",
+      "path": "services/a",
+      "deps": ["lib-common"]
+    },
+    {
+      "name": "svc-b",
+      "path": "services/b",
+      "deps": ["lib-common"]
+    }
+  ]
+}
