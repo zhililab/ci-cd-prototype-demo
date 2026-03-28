@@ -1,8 +1,10 @@
 import pytest
+from pathlib import Path
 
 from scripts.impacted_modules import (
     closure_with_dependents,
     detect_modules_from_paths,
+    load_graph,
     validate_graph,
 )
 
@@ -36,3 +38,29 @@ def test_validate_graph_rejects_unknown_dependency():
     }
     with pytest.raises(ValueError, match="unknown dependency"):
         validate_graph(modules)
+
+
+def test_validate_graph_rejects_dependency_cycle():
+    modules = {
+        "svc-a": {"deps": ["svc-b"], "path": "services/a"},
+        "svc-b": {"deps": ["svc-a"], "path": "services/b"},
+    }
+    with pytest.raises(ValueError, match="Dependency cycle detected"):
+        validate_graph(modules)
+
+
+def test_load_graph_rejects_duplicate_module_path(tmp_path: Path):
+    modules_file = tmp_path / "modules.json"
+    modules_file.write_text(
+        json.dumps(
+            {
+                "modules": [
+                    {"name": "svc-a", "path": "services/a", "deps": []},
+                    {"name": "svc-b", "path": "services/a", "deps": []},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Duplicate module path"):
+        load_graph(modules_file)
