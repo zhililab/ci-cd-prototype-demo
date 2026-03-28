@@ -20,7 +20,16 @@ def load_graph(modules_file: Path):
         modules[m["name"]] = m
         for dep in m.get("deps", []):
             reverse[dep].append(m["name"])
+    validate_graph(modules)
     return modules, reverse
+
+
+def validate_graph(modules: dict) -> None:
+    names = set(modules.keys())
+    for name, meta in modules.items():
+        for dep in meta.get("deps", []):
+            if dep not in names:
+                raise ValueError(f"Module '{name}' references unknown dependency '{dep}'")
 
 
 def detect_modules_from_paths(modules: dict, files: list[str]) -> set[str]:
@@ -47,7 +56,8 @@ def closure_with_dependents(impacted: set[str], reverse: dict) -> set[str]:
 
 def main():
     diff_range = os.environ.get("GIT_DIFF_RANGE", "origin/master...HEAD")
-    changed_files = run(["git", "diff", "--name-only", diff_range]).splitlines()
+    changed_files_raw = run(["git", "diff", "--name-only", diff_range])
+    changed_files = changed_files_raw.splitlines() if changed_files_raw else []
 
     modules, reverse = load_graph(Path("modules.json"))
     impacted = detect_modules_from_paths(modules, changed_files)
