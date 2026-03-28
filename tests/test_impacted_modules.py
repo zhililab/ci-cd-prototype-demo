@@ -1,7 +1,5 @@
-import json
-from pathlib import Path
-
 import pytest
+from pathlib import Path
 
 from scripts.impacted_modules import (
     closure_with_dependents,

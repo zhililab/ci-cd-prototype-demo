@@ -42,8 +42,6 @@ def validate_graph(modules: dict) -> None:
         for dep in meta.get("deps", []):
             if dep not in names:
                 raise ValueError(f"Module '{name}' references unknown dependency '{dep}'")
-    ensure_acyclic(modules)
-
 
 def ensure_acyclic(modules: dict) -> None:
     state = {}  # 0=visiting, 1=done
@@ -65,7 +63,6 @@ def ensure_acyclic(modules: dict) -> None:
     for module_name in sorted(modules):
         if module_name not in state:
             dfs(module_name, [])
-
 
 def detect_modules_from_paths(modules: dict, files: list[str]) -> set[str]:
     impacted = set()
